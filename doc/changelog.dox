@@ -122,11 +122,19 @@ See also:
     @ref Magnum namespace were moved to @ref Magnum/GL directory and
     @ref Magnum::GL namespace. See their documentation for information about
     particular files, classes, enums, typedefs, values and functions.
+-   The @ref PixelFormat and @ref CompressedPixelFormat enum now contains
+    generic API-independent values. The GL-specific formats are present there,
+    but marked as deprecated. Use either the generic values or
+    @ref GL::PixelFormat (together with @ref GL::PixelType) and
+    @ref GL::CompressedPixelFormat instead.
 -   @ref PixelStorage::pixelSize() was deprecated, use @ref GL::pixelSize()
-    instead
+    or @ref Magnum::pixelSize() instead
 -   @ref PixelStorage::dataProperties(GL::PixelFormat, GL::PixelSize, const Vector3i&)
     was deprecated for being too GL-specific, use @ref PixelStorage(std::size_t, const Vector3i&)
     together with @ref GL::pixelSize() instead
+-   `Image*::type()` functions are deprecated as these are too GL-specific. The
+    second format specifier is now available through @ref Image::formatExtra(),
+    @ref ImageView::formatExtra() and @ref Trade::ImageData::formatExtra()
 -   `setData()` functions in the @ref Image and @ref CompressedImage classes
     are deprecated because they don't offer anything extra over simple
     move-assignment of a new instance.
@@ -177,6 +185,34 @@ See also:
     to the complexity of this change, no backwards compatibility is provided.
 -   The `magnum-info` utility was renamed to @ref magnum-gl-info. No backwards
     compatibility symlinks or aliases are provided.
+-   @ref ImageView and @ref CompressedImageView methods are no longer
+    @cpp constexpr @ce. It might be possible to have them @cpp constexpr @ce in
+    C++14, but the resulting increase in maintenance costs and compile times is
+    not worth it.
+-   `PixelFormat` has been moved verbatim to @ref GL::PixelFormat and there's a
+    new @ref Magnum::PixelFormat enum for generic pixel formats. It contains
+    (deprecated) @ref GL::PixelFormat values for covering most of backward
+    compatibility, but code that relies on these two types being the same may
+    break. In particular, @ref GL::BufferImage::format() now returns
+    @ref GL::PixelFormat instead of @ref Magnum::PixelFormat, code depending on
+    the return type being implicitly convertible to @ref Magnum::PixelFormat
+    may break. In all other cases, @ref Image::format() "Image*::format()"
+    returns @ref Magnum::PixelFormat.
+-   `CompressedPixelFormat` has been moved verbatim to
+    @ref GL::CompressedPixelFormat and there's a new
+    @ref Magnum::CompressedPixelFormat enum for generic pixel formats. It
+    contains (deprecated) @ref GL::CompressedPixelFormat values for covering
+    most of backward compatibility, but code that relies on these two types
+    being the same may break. In particular,
+    @ref GL::CompressedBufferImage::format()  now returns
+    @ref GL::CompressedPixelFormat instead of @ref Magnum::CompressedPixelFormat,
+    code depending on the return type being implicitly convertible to
+    @ref Magnum::CompressedPixelFormat may break. In all other cases,
+    @ref CompressedImage::format() "CompressedImage*::format()"
+    returns @ref Magnum::CompressedPixelFormat.
+-   The @ref Image::pixelSize(), @ref ImageView::pixelSize(),
+    @ref Trade::ImageData::pixelSize() and @ref BufferImage::pixelSize()
+    functions now return @ref UnsignedInt instead of @cpp std::size_t @ce.
 -   Removed `PixelStorage::setSwapBytes()`, as every Magnum API dealing with
     images basically only asserted that it's not set. Use
     @ref Corrade::Utility::Endianness instead.

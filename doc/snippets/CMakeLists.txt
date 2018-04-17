@@ -34,6 +34,7 @@ if(CORRADE_TARGET_EMSCRIPTEN AND NOT TARGET_GLES2)
 endif()
 
 add_library(snippets-Magnum STATIC
+    Magnum.cpp
     plugins.cpp)
 target_link_libraries(snippets-Magnum PRIVATE Magnum)
 set_target_properties(snippets-Magnum PROPERTIES FOLDER "Magnum/doc/snippets")
@@ -46,6 +47,13 @@ if(WITH_GL)
         MagnumText.cpp)
     target_link_libraries(snippets-MagnumGL PRIVATE MagnumGL)
     set_target_properties(snippets-MagnumGL PROPERTIES FOLDER "Magnum/doc/snippets")
+endif()
+
+if(WITH_TRADE)
+    add_library(snippets-MagnumTrade STATIC
+        MagnumTrade.cpp)
+    target_link_libraries(snippets-MagnumTrade PRIVATE MagnumTrade)
+    set_target_properties(snippets-MagnumTrade PROPERTIES FOLDER "Magnum/doc/snippets")
 endif()
 
 find_package(Corrade COMPONENTS TestSuite)
