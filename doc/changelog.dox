@@ -86,6 +86,13 @@ See also:
 -   Debug output operator for @ref Trade::PhongMaterialData::Flag and
     @ref Trade::PhongMaterialData::Flags
 
+@subsection changelog-latest-changes Changes and improvements
+
+-   The @ref CompressedPixelStorage class and related APIs are now available
+    on all targets including OpenGL ES and WebGL, however at the moment, until
+    a compatibility code path is implemented, the @ref GL library expects that
+    all parameters are at their defaults.
+
 @subsection changelog-latest-buildsystem Build system
 
 -   All plugin interfaces now implement

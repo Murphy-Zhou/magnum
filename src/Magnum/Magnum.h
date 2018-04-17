@@ -701,9 +701,7 @@ enum class PixelFormat: UnsignedInt;
 enum class CompressedPixelFormat: UnsignedInt;
 
 class PixelStorage;
-#ifndef MAGNUM_TARGET_GLES
 class CompressedPixelStorage;
-#endif
 
 enum class ResourceState: UnsignedByte;
 enum class ResourceDataState: UnsignedByte;

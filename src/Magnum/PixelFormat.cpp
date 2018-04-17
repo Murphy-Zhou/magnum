@@ -100,32 +100,48 @@ UnsignedInt pixelSize(const PixelFormat format) {
         #pragma warning(push)
         #pragma warning(disable: 4996)
         #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
         case PixelFormat::Red:
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
         case PixelFormat::Green:
         case PixelFormat::Blue:
+        #endif
         #ifdef MAGNUM_TARGET_GLES2
         case PixelFormat::Luminance:
         #endif
+        #if !(defined(MAGNUM_TARGET_WEBGL) && defined(MAGNUM_TARGET_GLES2))
         case PixelFormat::RG:
+        #endif
         #ifdef MAGNUM_TARGET_GLES2
         case PixelFormat::LuminanceAlpha:
         #endif
         case PixelFormat::RGB:
         case PixelFormat::RGBA:
+        #ifndef MAGNUM_TARGET_GLES
         case PixelFormat::BGR:
+        #endif
+        #ifndef MAGNUM_TARGET_WEBGL
         case PixelFormat::BGRA:
+        #endif
         #ifdef MAGNUM_TARGET_GLES2
         case PixelFormat::SRGB:
         case PixelFormat::SRGBAlpha:
         #endif
+        #ifndef MAGNUM_TARGET_GLES2
         case PixelFormat::RedInteger:
+        #ifndef MAGNUM_TARGET_GLES
         case PixelFormat::GreenInteger:
         case PixelFormat::BlueInteger:
+        #endif
         case PixelFormat::RGInteger:
         case PixelFormat::RGBInteger:
         case PixelFormat::RGBAInteger:
+        #ifndef MAGNUM_TARGET_GLES
         case PixelFormat::BGRInteger:
         case PixelFormat::BGRAInteger:
+        #endif
+        #endif
         case PixelFormat::DepthComponent:
         #ifndef MAGNUM_TARGET_WEBGL
         case PixelFormat::StencilIndex:
