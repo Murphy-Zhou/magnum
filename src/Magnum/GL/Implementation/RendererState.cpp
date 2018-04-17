@@ -141,6 +141,9 @@ void RendererState::applyPixelStorageInternal(const Magnum::PixelStorage& storag
             state.rowLength = storage.rowLength());
         #endif
     }
+    #else
+    CORRADE_ASSERT(!storage.rowLength(),
+        "GL: non-default PixelStorage::rowLength() is not supported in WebGL 1.0", );
     #endif
 
     #ifndef MAGNUM_TARGET_GLES
@@ -148,6 +151,9 @@ void RendererState::applyPixelStorageInternal(const Magnum::PixelStorage& storag
     if(state.imageHeight == GL::Implementation::RendererState::PixelStorage::DisengagedValue || state.imageHeight != storage.imageHeight())
         glPixelStorei(isUnpack ? GL_UNPACK_IMAGE_HEIGHT : GL_PACK_IMAGE_HEIGHT,
             state.imageHeight = storage.imageHeight());
+    #else
+    CORRADE_ASSERT(!storage.imageHeight(),
+        "GL: non-default PixelStorage::imageHeight() is not supported in OpenGL ES", );
     #endif
 
     /* On ES2 done by modifying data pointer */

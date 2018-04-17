@@ -310,7 +310,7 @@ void AbstractFramebuffer::read(const Range2Di& rectangle, Image2D& image) {
     Context::current().state().renderer->applyPixelStoragePack(image.storage());
     (Context::current().state().framebuffer->readImplementation)(rectangle, pixelFormat(image.format()), pixelType(image.format(), image.formatExtra()), data.size(), data
         #ifdef MAGNUM_TARGET_GLES2
-        + Implementation::pixelStorageSkipOffsetFor(image, rectangle.size())
+        + Magnum::Implementation::pixelStorageSkipOffsetFor(image, rectangle.size())
         #endif
         );
     image = Image2D{image.storage(), image.format(), image.type(), rectangle.size(), std::move(data)};
