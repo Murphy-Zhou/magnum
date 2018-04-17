@@ -48,6 +48,14 @@ See also:
 
 @subsection changelog-latest-new New features
 
+@subsubsection changelog-latest-new-math Math library
+
+-   Added @ref Math::isInf(), @ref Math::isNan()
+
+@subsubsection changelog-latest-new-gl GL library
+
+-   A new library that now contains wrappers for the OpenGL family of graphics
+    APIs, separated from the core Magnum library
 -   Initial support for OpenGL ES 3.2 and OpenGL 4.6
 -   New OpenGL extension support:
     -   @extension{ARB,texture_filter_anisotropic}
@@ -59,10 +67,6 @@ See also:
         @webgl_extension{WEBGL,color_buffer_float},
         @webgl_extension{EXT,color_buffer_float}
 -   Ported @ref OpenGLTester to WebGL
-
-@subsubsection changelog-latest-new-math Math library
-
--   Added @ref Math::isInf(), @ref Math::isNan()
 
 @subsubsection changelog-latest-new-platform Platform libraries
 
