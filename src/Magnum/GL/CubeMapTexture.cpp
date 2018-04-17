@@ -356,11 +356,7 @@ CubeMapTexture& CubeMapTexture::setCompressedSubImage(const CubeMapCoordinate co
     #ifndef MAGNUM_TARGET_GLES2
     Buffer::unbindInternal(Buffer::TargetHint::PixelUnpack);
     #endif
-    #ifndef MAGNUM_TARGET_GLES
-    /* Pixel storage is completely ignored for compressed images on ES, no need
-       to reset anything */
     Context::current().state().renderer->applyPixelStorageUnpack(image.storage());
-    #endif
     (this->*Context::current().state().texture->cubeCompressedSubImageImplementation)(coordinate, level, offset, image.size(), compressedPixelFormat(image.format()), image.data(), Magnum::Implementation::occupiedCompressedImageDataSize(image, image.data().size()));
     return *this;
 }
@@ -368,11 +364,7 @@ CubeMapTexture& CubeMapTexture::setCompressedSubImage(const CubeMapCoordinate co
 #ifndef MAGNUM_TARGET_GLES2
 CubeMapTexture& CubeMapTexture::setCompressedSubImage(const CubeMapCoordinate coordinate, const Int level, const Vector2i& offset, CompressedBufferImage2D& image) {
     image.buffer().bindInternal(Buffer::TargetHint::PixelUnpack);
-    #ifndef MAGNUM_TARGET_GLES
-    /* Pixel storage is completely ignored for compressed images on ES, no need
-       to reset anything */
     Context::current().state().renderer->applyPixelStorageUnpack(image.storage());
-    #endif
     (this->*Context::current().state().texture->cubeCompressedSubImageImplementation)(coordinate, level, offset, image.size(), image.format(), nullptr, Magnum::Implementation::occupiedCompressedImageDataSize(image, image.dataSize()));
     return *this;
 }

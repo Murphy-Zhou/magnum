@@ -39,10 +39,14 @@ struct PixelFormatTest: TestSuite::Tester {
     #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
     void mapFormatDeprecated();
     #endif
+    void mapFormatUnsupported();
     void mapFormatInvalid();
     void mapTypeImplementationSpecific();
     void mapTypeImplementationSpecificZero();
+    #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
     void mapTypeDeprecated();
+    #endif
+    void mapTypeUnsupported();
     void mapTypeInvalid();
 
     void mapCompressedFormat();
@@ -64,12 +68,14 @@ PixelFormatTest::PixelFormatTest() {
               #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
               &PixelFormatTest::mapFormatDeprecated,
               #endif
+              &PixelFormatTest::mapFormatUnsupported,
               &PixelFormatTest::mapFormatInvalid,
               &PixelFormatTest::mapTypeImplementationSpecific,
               &PixelFormatTest::mapTypeImplementationSpecificZero,
               #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
               &PixelFormatTest::mapTypeDeprecated,
               #endif
+              &PixelFormatTest::mapTypeDeprecated,
               &PixelFormatTest::mapTypeInvalid,
 
               &PixelFormatTest::mapCompressedFormat,
@@ -104,6 +110,14 @@ void PixelFormatTest::mapFormatType() {
                     CORRADE_COMPARE(firstUnhandled, 0xffff); \
                     CORRADE_COMPARE(pixelFormat(Magnum::PixelFormat::format), Magnum::GL::PixelFormat::expectedFormat); \
                     CORRADE_COMPARE(pixelType(Magnum::PixelFormat::format), Magnum::GL::PixelType::expectedType); \
+                    ++nextHandled; \
+                    continue;
+            #define _s(format) \
+                case Magnum::PixelFormat::format: \
+                    CORRADE_COMPARE(nextHandled, i); \
+                    CORRADE_COMPARE(firstUnhandled, 0xffff); \
+                    CORRADE_COMPARE(pixelFormat(Magnum::PixelFormat::format), Magnum::GL::PixelFormat(0)); \
+                    CORRADE_COMPARE(pixelType(Magnum::PixelFormat::format), Magnum::GL::PixelType(0)); \
                     ++nextHandled; \
                     continue;
             #include "Magnum/GL/Implementation/pixelFormatMapping.hpp"
@@ -204,6 +218,18 @@ void PixelFormatTest::mapFormatDeprecated() {
 }
 #endif
 
+void PixelFormatTest::mapFormatUnsupported() {
+    #ifndef MAGNUM_TARGET_GLES2
+    CORRADE_SKIP("All pixel formats are supported on ES3+");
+    #else
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    pixelFormat(Magnum::PixelFormat::RGB16UI);
+    CORRADE_COMPARE(out.str(), "GL::pixelFormat(): format PixelFormat::RGB16UI is not supported on this target\n");
+    #endif
+}
+
 void PixelFormatTest::mapFormatInvalid() {
     std::ostringstream out;
     Error redirectError{&out};
@@ -233,6 +259,18 @@ void PixelFormatTest::mapTypeDeprecated() {
     CORRADE_IGNORE_DEPRECATED_POP
 }
 #endif
+
+void PixelFormatTest::mapTypeUnsupported() {
+    #ifndef MAGNUM_TARGET_GLES2
+    CORRADE_SKIP("All pixel formats are supported on ES3+");
+    #else
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    pixelType(Magnum::PixelFormat::RGB16UI);
+    CORRADE_COMPARE(out.str(), "GL::pixelType(): format PixelFormat::RGB16UI is not supported on this target\n");
+    #endif
+}
 
 void PixelFormatTest::mapTypeInvalid() {
     std::ostringstream out;

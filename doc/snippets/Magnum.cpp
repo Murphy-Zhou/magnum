@@ -127,7 +127,7 @@ CompressedImageView2D image{
 /* [CompressedImageView-usage-storage] */
 }
 
-#ifdef MAGNUM_TARGET_GL
+#if defined(MAGNUM_TARGET_GL) && !defined(MAGNUM_TARGET_GLES)
 {
 char data[3];
 /* [CompressedImageView-usage-gl] */
@@ -149,6 +149,7 @@ Image2D image{PixelFormat::RGBA8Unorm, {512, 256}, std::move(data)};
 /* [Image-usage] */
 }
 
+#if defined(MAGNUM_TARGET_GL) && !defined(MAGNUM_TARGET_GLES)
 {
 /* [Image-usage-query] */
 GL::Texture2D texture;
@@ -156,6 +157,7 @@ Image2D image = texture.image(0, {GL::PixelFormat::DepthComponent,
                                   GL::PixelType::UnsignedInt});
 /* [Image-usage-query] */
 }
+#endif
 
 {
 /* [CompressedImage-usage] */
@@ -165,11 +167,13 @@ CompressedImage2D image{CompressedPixelFormat::Bc1RGBUnorm,
 /* [CompressedImage-usage] */
 }
 
+#if defined(MAGNUM_TARGET_GL) && !defined(MAGNUM_TARGET_GLES)
 {
 /* [CompressedImage-usage-query] */
 GL::Texture2D texture;
 CompressedImage2D image = texture.compressedImage(0, {});
 /* [CompressedImage-usage-query] */
 }
+#endif
 
 }

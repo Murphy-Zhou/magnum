@@ -390,7 +390,6 @@ Buffer vertices{Buffer::TargetHint::Array},
 }
 
 #ifndef MAGNUM_TARGET_GLES2
-
 {
 char data[3];
 /* [BufferImage-usage] */
@@ -407,6 +406,7 @@ GL::BufferImage2D image{GL::PixelFormat::RGBA, GL::PixelType::UnsignedByte,
 /* [BufferImage-usage-wrap] */
 }
 
+#ifndef MAGNUM_TARGET_GLES
 {
 /* [BufferImage-usage-query] */
 GL::Texture2D texture;
@@ -414,6 +414,7 @@ GL::BufferImage2D image = texture.image(0, {GL::PixelFormat::RGBA,
     GL::PixelType::UnsignedByte}, GL::BufferUsage::StaticRead);
 /* [BufferImage-usage-query] */
 }
+#endif
 
 {
 char data[3];
@@ -431,6 +432,7 @@ GL::CompressedBufferImage2D image{GL::CompressedPixelFormat::RGBS3tcDxt1,
 /* [CompressedBufferImage-usage-wrap] */
 }
 
+#ifndef MAGNUM_TARGET_GLES
 {
 /* [CompressedBufferImage-usage-query] */
 GL::Texture2D texture;
@@ -438,7 +440,7 @@ GL::CompressedBufferImage2D image = texture.compressedImage(0, {},
     GL::BufferUsage::StaticRead);
 /* [CompressedBufferImage-usage-query] */
 }
-
+#endif
 #endif
 
 #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)

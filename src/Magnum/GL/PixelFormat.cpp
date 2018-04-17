@@ -40,6 +40,7 @@ constexpr struct {
     GL::PixelType type;
 } FormatMapping[] {
     #define _c(input, format, type) {GL::PixelFormat::format, GL::PixelType::type},
+    #define _s(input) {{}, {}},
     #include "Magnum/GL/Implementation/pixelFormatMapping.hpp"
     #undef _c
 };
@@ -58,7 +59,10 @@ GL::PixelFormat pixelFormat(const Magnum::PixelFormat format) {
 
     CORRADE_ASSERT(UnsignedInt(format) < Containers::arraySize(FormatMapping),
         "GL::pixelFormat(): invalid format" << format, {});
-    return FormatMapping[UnsignedInt(format)].format;
+    const GL::PixelFormat out = FormatMapping[UnsignedInt(format)].format;
+    CORRADE_ASSERT(UnsignedInt(out),
+        "GL::pixelFormat(): format" << format << "is not supported on this target", {});
+    return out;
 }
 
 GL::PixelType pixelType(const Magnum::PixelFormat format, const UnsignedInt extra) {
@@ -75,7 +79,10 @@ GL::PixelType pixelType(const Magnum::PixelFormat format, const UnsignedInt extr
 
     CORRADE_ASSERT(UnsignedInt(format) < Containers::arraySize(FormatMapping),
         "GL::pixelType(): invalid format" << format, {});
-    return FormatMapping[UnsignedInt(format)].type;
+    const GL::PixelType out = FormatMapping[UnsignedInt(format)].type;
+    CORRADE_ASSERT(UnsignedInt(out),
+        "GL::pixelType(): format" << format << "is not supported on this target", {});
+    return out;
 }
 
 UnsignedInt pixelSize(const PixelFormat format, const PixelType type) {
