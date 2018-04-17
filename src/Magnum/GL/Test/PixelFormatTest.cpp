@@ -397,14 +397,10 @@ void PixelFormatTest::debugPixelType() {
 }
 
 void PixelFormatTest::debugCompressedPixelFormat() {
-    #ifdef MAGNUM_TARGET_GLES
-    CORRADE_SKIP("No enum value available");
-    #else
     std::ostringstream out;
 
-    Debug(&out) << CompressedPixelFormat::RGBBptcUnsignedFloat << CompressedPixelFormat(0xdead);
-    CORRADE_COMPARE(out.str(), "GL::CompressedPixelFormat::RGBBptcUnsignedFloat GL::CompressedPixelFormat(0xdead)\n");
-    #endif
+    Debug{&out} << CompressedPixelFormat::RGBS3tcDxt1 << CompressedPixelFormat(0xdead);
+    CORRADE_COMPARE(out.str(), "GL::CompressedPixelFormat::RGBS3tcDxt1 GL::CompressedPixelFormat(0xdead)\n");
 }
 
 }}}
