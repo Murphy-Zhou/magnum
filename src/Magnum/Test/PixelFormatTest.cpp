@@ -34,6 +34,9 @@ struct PixelFormatTest: TestSuite::Tester {
     explicit PixelFormatTest();
 
     void size();
+    #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
+    void sizeDeprecated();
+    #endif
     void sizeImplementationSpecific();
 
     void isImplementationSpecific();
@@ -57,6 +60,9 @@ struct PixelFormatTest: TestSuite::Tester {
 
 PixelFormatTest::PixelFormatTest() {
     addTests({&PixelFormatTest::size,
+              #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
+              &PixelFormatTest::sizeDeprecated,
+              #endif
               &PixelFormatTest::sizeImplementationSpecific,
 
               &PixelFormatTest::isImplementationSpecific,
@@ -79,15 +85,34 @@ PixelFormatTest::PixelFormatTest() {
 }
 
 void PixelFormatTest::size() {
+    CORRADE_COMPARE(pixelSize(PixelFormat::R8I), 1);
+    CORRADE_COMPARE(pixelSize(PixelFormat::R16UI), 2);
     CORRADE_COMPARE(pixelSize(PixelFormat::RGB8Unorm), 3);
+    CORRADE_COMPARE(pixelSize(PixelFormat::RGBA8Snorm), 4);
+    CORRADE_COMPARE(pixelSize(PixelFormat::RGB16I), 6);
     CORRADE_COMPARE(pixelSize(PixelFormat::RGBA16F), 8);
+    CORRADE_COMPARE(pixelSize(PixelFormat::RGB32UI), 12);
+    CORRADE_COMPARE(pixelSize(PixelFormat::RGBA32F), 16);
 }
+
+#if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
+void PixelFormatTest::sizeDeprecated() {
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    CORRADE_IGNORE_DEPRECATED_PUSH
+    pixelSize(PixelFormat::RGBA);
+    CORRADE_IGNORE_DEPRECATED_POP
+
+    CORRADE_COMPARE(out.str(), "pixelSize(): called with deprecated GL-specific format, use GL::pixelSize() instead\n");
+}
+#endif
 
 void PixelFormatTest::sizeImplementationSpecific() {
     std::ostringstream out;
     Error redirectError{&out};
 
-    Magnum::pixelSize(pixelFormatWrap(0xdead));
+    pixelSize(pixelFormatWrap(0xdead));
 
     CORRADE_COMPARE(out.str(), "pixelSize(): can't determine pixel size of an implementation-specific format\n");
 }
@@ -98,7 +123,7 @@ void PixelFormatTest::isImplementationSpecific() {
 }
 
 void PixelFormatTest::wrap() {
-    CORRADE_COMPARE(UnsignedInt(pixelFormatWrap(0xdead)), 0x800dead);
+    CORRADE_COMPARE(UnsignedInt(pixelFormatWrap(0xdead)), 0x8000dead);
 }
 
 void PixelFormatTest::wrapInvalid() {
@@ -107,11 +132,11 @@ void PixelFormatTest::wrapInvalid() {
 
     pixelFormatWrap(0xdeadbeef);
 
-    CORRADE_COMPARE(out.str(), "pixelFormatWrap(): the highest bit is expected to be unset\n");
+    CORRADE_COMPARE(out.str(), "pixelFormatWrap(): implementation-specific value already wrapped or too large\n");
 }
 
 void PixelFormatTest::unwrap() {
-    CORRADE_COMPARE(UnsignedInt(pixelFormatUnwrap(PixelFormat(0x800dead))), 0xdead);
+    CORRADE_COMPARE(UnsignedInt(pixelFormatUnwrap(PixelFormat(0x8000dead))), 0xdead);
 }
 
 void PixelFormatTest::unwrapInvalid() {
@@ -120,7 +145,7 @@ void PixelFormatTest::unwrapInvalid() {
 
     pixelFormatUnwrap(PixelFormat(0xdead));
 
-    CORRADE_COMPARE(out.str(), "pixelFormatUnwrap(): the highest bit is expected to be set\n");
+    CORRADE_COMPARE(out.str(), "pixelFormatUnwrap(): format doesn't contain a wrapped implementation-specific value\n");
 }
 
 void PixelFormatTest::compressedIsImplementationSpecific() {
@@ -129,7 +154,7 @@ void PixelFormatTest::compressedIsImplementationSpecific() {
 }
 
 void PixelFormatTest::compressedWrap() {
-    CORRADE_COMPARE(UnsignedInt(pixelFormatWrap(0xdead)), 0x800dead);
+    CORRADE_COMPARE(UnsignedInt(pixelFormatWrap(0xdead)), 0x8000dead);
 }
 
 void PixelFormatTest::compressedWrapInvalid() {
@@ -138,11 +163,11 @@ void PixelFormatTest::compressedWrapInvalid() {
 
     compressedPixelFormatWrap(0xdeadbeef);
 
-    CORRADE_COMPARE(out.str(), "compressedPixelFormatWrap(): the highest bit is expected to be unset\n");
+    CORRADE_COMPARE(out.str(), "compressedPixelFormatWrap(): implementation-specific value already wrapped or too large\n");
 }
 
 void PixelFormatTest::compressedUnwrap() {
-    CORRADE_COMPARE(UnsignedInt(compressedPixelFormatUnwrap(CompressedPixelFormat(0x800dead))), 0xdead);
+    CORRADE_COMPARE(UnsignedInt(compressedPixelFormatUnwrap(CompressedPixelFormat(0x8000dead))), 0xdead);
 }
 
 void PixelFormatTest::compressedUnwrapInvalid() {
@@ -151,7 +176,7 @@ void PixelFormatTest::compressedUnwrapInvalid() {
 
     compressedPixelFormatUnwrap(CompressedPixelFormat(0xdead));
 
-    CORRADE_COMPARE(out.str(), "compressedPixelFormatUnwrap(): the highest bit is expected to be set\n");
+    CORRADE_COMPARE(out.str(), "compressedPixelFormatUnwrap(): format doesn't contain a wrapped implementation-specific value\n");
 }
 
 void PixelFormatTest::debug() {

@@ -191,7 +191,6 @@ if(NOT BUILD_STATIC OR BUILD_STATIC_PIC)
 endif()
 set_target_properties(MagnumGLObjects PROPERTIES FOLDER "Magnum/GL")
 
-
 # Link in GL function pointer variables on platforms that support it
 if(NOT CORRADE_TARGET_EMSCRIPTEN)
     set(MagnumGL_FlextGL_SRCS $<TARGET_OBJECTS:MagnumFlextGLObjects>)

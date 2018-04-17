@@ -26,7 +26,7 @@
 */
 
 /** @file
- * @brief Enum @ref Magnum::GL::PixelFormat, @ref Magnum::GL::PixelType, @ref Magnum::GL::CompressedPixelFormat, function @ref Magnum::GL::pixelSize()
+ * @brief Enum @ref Magnum::GL::PixelFormat, @ref Magnum::GL::PixelType, @ref Magnum::GL::CompressedPixelFormat, function @ref Magnum::GL::hasPixelFormat(), @ref Magnum::GL::pixelFormat(), @ref Magnum::GL::pixelType(), @ref Magnum::GL::pixelSize(), @ref Magnum::GL::hasCompressedPixelFormat(), @ref Magnum::GL::compressedPixelFormat()
  */
 
 #include "Magnum/Magnum.h"
@@ -596,6 +596,24 @@ enum class PixelType: GLenum {
 };
 
 /**
+@brief Check availability of generic pixel format
+
+Some OpenGL targets don't support all generic pixel formats (for example WebGL
+1.0 and OpenGL ES 2.0 don't support most of single- and two-component or
+integer formats). Returns @cpp false @ce if current target can't support such
+format, @cpp true @ce otherwise. Moreover, returns @cpp true @ce also for all
+formats that are @ref isPixelFormatImplementationSpecific(). The @p format
+value is expected to be valid.
+
+@note Support of some formats depends on presence of a particular OpenGL
+    extension. Such check is outside of the scope of this function and you are
+    expected to verify extension availability before using such format.
+
+@see @ref pixelFormat(), @ref pixelType()
+*/
+MAGNUM_GL_EXPORT bool hasPixelFormat(Magnum::PixelFormat format);
+
+/**
 @brief Convert generic pixel format to OpenGL pixel format
 
 In case @ref isPixelFormatImplementationSpecific() returns @cpp false @ce for
@@ -603,6 +621,10 @@ In case @ref isPixelFormatImplementationSpecific() returns @cpp false @ce for
 @ref isPixelFormatImplementationSpecific() returns @cpp true @ce, assumes
 @p format stores OpenGL-specific pixel format and returns
 @ref pixelFormatUnwrap() cast to @ref GL::PixelFormat.
+
+Not all generic pixel formats may be available on all targets and this function
+expects that given format is available on the target. Use @ref hasPixelFormat()
+to query availability of given format.
 @see @ref pixelType()
 */
 MAGNUM_GL_EXPORT GL::PixelFormat pixelFormat(Magnum::PixelFormat format);
@@ -615,6 +637,10 @@ In case @ref isPixelFormatImplementationSpecific() returns @cpp false @ce for
 @ref isPixelFormatImplementationSpecific() returns @cpp true @ce, assumes
 @p extra stores OpenGL-specific pixel type and returns it cast to
 @ref GL::PixelType.
+
+Not all generic pixel formats may be available on all targets and this function
+expects that given format is available on the target. Use @ref hasPixelFormat()
+to query availability of given format.
 @see @ref pixelFormat()
 */
 MAGNUM_GL_EXPORT GL::PixelType pixelType(Magnum::PixelFormat format, UnsignedInt extra = 0);
@@ -1282,6 +1308,24 @@ enum class CompressedPixelFormat: GLenum {
 };
 
 /**
+@brief Check availability of generic compressed pixel format
+
+Some OpenGL targets don't support all generic pixel formats (for example ASTC
+compression might not be available on WebGL 1.0). Returns @cpp false @ce if
+current target can't support such format, @cpp true @ce otherwise. Moreover,
+returns @cpp true @ce also for all formats that are
+@ref isCompressedPixelFormatImplementationSpecific().The @p format value is
+expected to be valid.
+
+@note Support of some formats depends on presence of a particular OpenGL
+    extension. Such check is outside of the scope of this function and you are
+    expected to verify extension availability before using such format.
+
+@see @ref pixelFormat(), @ref pixelType()
+*/
+MAGNUM_GL_EXPORT bool hasCompressedPixelFormat(Magnum::CompressedPixelFormat format);
+
+/**
 @brief Convert generic compressed pixel format to OpenGL compressed pixel format
 
 In case @ref isCompressedPixelFormatImplementationSpecific() returns
@@ -1289,6 +1333,10 @@ In case @ref isCompressedPixelFormatImplementationSpecific() returns
 In case @ref isCompressedPixelFormatImplementationSpecific() returns
 @cpp true @ce, assumes @p format stores OpenGL-specific pixel format and
 returns @ref compressedPixelFormatUnwrap() cast to @ref GL::CompressedPixelFormat.
+
+Not all generic pixel formats may be available on all targets and this function
+expects that given format is available on the target. Use
+@ref hasCompressedPixelFormat() to query availability of given format.
 @see @ref pixelFormat()
 */
 MAGNUM_GL_EXPORT GL::CompressedPixelFormat compressedPixelFormat(Magnum::CompressedPixelFormat format);

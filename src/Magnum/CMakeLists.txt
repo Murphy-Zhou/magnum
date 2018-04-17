@@ -30,10 +30,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure.h.cmake
 set(Magnum_SRCS
     Image.cpp
     ImageView.cpp
-    PixelFormat.cpp
     PixelStorage.cpp
     Resource.cpp
     Timeline.cpp)
+
+set(Magnum_GracefulAssert_SRCS
+    PixelFormat.cpp)
 
 set(Magnum_HEADERS
     AbstractResourceLoader.h
@@ -132,7 +134,7 @@ set(MagnumMath_SRCS
     Math/Packing.cpp
     Math/instantiation.cpp)
 
-# Objects shared between main and test library
+# Objects shared between main and math test library
 add_library(MagnumMathObjects OBJECT ${MagnumMath_SRCS})
 target_include_directories(MagnumMathObjects PUBLIC $<TARGET_PROPERTY:Magnum,INTERFACE_INCLUDE_DIRECTORIES>)
 if(NOT BUILD_STATIC)
@@ -143,11 +145,27 @@ if(NOT BUILD_STATIC OR BUILD_STATIC_PIC)
 endif()
 set_target_properties(MagnumMathObjects PROPERTIES FOLDER "Magnum/Math")
 
-# Main library
-add_library(Magnum ${SHARED_OR_STATIC}
+# Objects shared between main and test library
+add_library(MagnumObjects OBJECT
     ${Magnum_SRCS}
     ${Magnum_HEADERS}
-    $<TARGET_OBJECTS:MagnumMathObjects>)
+    ${Magnum_PRIVATE_HEADERS})
+target_include_directories(MagnumObjects PUBLIC
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}/src)
+if(NOT BUILD_STATIC)
+    target_compile_definitions(MagnumObjects PRIVATE "MagnumObjects_EXPORTS")
+endif()
+if(NOT BUILD_STATIC OR BUILD_STATIC_PIC)
+    set_target_properties(MagnumObjects PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+set_target_properties(MagnumObjects PROPERTIES FOLDER "Magnum")
+
+# Main library
+add_library(Magnum ${SHARED_OR_STATIC}
+    $<TARGET_OBJECTS:MagnumMathObjects>
+    $<TARGET_OBJECTS:MagnumObjects>
+    ${Magnum_GracefulAssert_SRCS})
 set_target_properties(Magnum PROPERTIES
     DEBUG_POSTFIX "-d"
     FOLDER "Magnum")
@@ -217,7 +235,7 @@ if(WITH_TRADE)
 endif()
 
 if(BUILD_TESTS)
-    # Library with graceful assert for testing
+    # Math library with graceful assert for testing
     add_library(MagnumMathTestLib ${SHARED_OR_STATIC}
         $<TARGET_OBJECTS:MagnumMathObjects>
         ${PROJECT_SOURCE_DIR}/src/dummy.cpp) # XCode workaround, see file comment for details
@@ -227,6 +245,21 @@ if(BUILD_TESTS)
         DEBUG_POSTFIX "-d"
         FOLDER "Magnum/Math")
     target_link_libraries(MagnumMathTestLib Corrade::Utility)
+
+    # Library with graceful assert for testing
+    add_library(MagnumTestLib ${SHARED_OR_STATIC}
+        $<TARGET_OBJECTS:MagnumMathObjects>
+        $<TARGET_OBJECTS:MagnumObjects>
+        ${Magnum_GracefulAssert_SRCS})
+    set_target_properties(MagnumTestLib PROPERTIES
+        DEBUG_POSTFIX "-d"
+        FOLDER "Magnum")
+    target_compile_definitions(MagnumTestLib PRIVATE
+        "CORRADE_GRACEFUL_ASSERT" "Magnum_EXPORTS")
+    if(BUILD_STATIC_PIC)
+        set_target_properties(MagnumTestLib PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    endif()
+    target_link_libraries(MagnumTestLib PUBLIC Corrade::Utility)
 
     # On Windows we need to install first and then run the tests to avoid "DLL
     # not found" hell, thus we need to install this too

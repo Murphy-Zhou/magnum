@@ -48,6 +48,14 @@ See also:
 
 @subsection changelog-latest-new New features
 
+-   New @ref PixelFormat / @ref CompressedPixelFormat enums containing generic
+    API-independent pixel formats, together with @ref pixelSize(),
+    @ref pixelFormatWrap() / @ref pixelFormatUnwrap(),
+    @ref compressedPixelFormatWrap() / @ref compressedPixelFormatUnwrap() and @ref isImplementationSpecificPixelFormat() /
+    @ref isImplementationSpecificCompressedPixelFormat() utilities now used by
+    @ref Image / @ref CompressedImage and @ref ImageView /
+    @ref CompressedImageView instead of the GL-specific formats
+
 @subsubsection changelog-latest-new-math Math library
 
 -   Added @ref Math::isInf(), @ref Math::isNan()
@@ -56,6 +64,11 @@ See also:
 
 -   A new library that now contains wrappers for the OpenGL family of graphics
     APIs, separated from the core Magnum library
+-   New @ref GL::hasPixelFormat(), @ref GL::pixelFormat(), @ref GL::pixelType(),
+    @ref GL::hasCompressedPixelFormat(), @ref compressedPixelFormat() utilities
+    for converting generic @ref PixelFormat / @ref CompressedPixelFormat to
+    GL-specific @ref GL::PixelFormat, @ref GL::PixelType and
+    @ref GL::CompressedPixelFormat values
 -   Initial support for OpenGL ES 3.2 and OpenGL 4.6
 -   New OpenGL extension support:
     -   @extension{ARB,texture_filter_anisotropic}

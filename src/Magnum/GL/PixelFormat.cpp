@@ -42,9 +42,26 @@ constexpr struct {
     #define _c(input, format, type) {GL::PixelFormat::format, GL::PixelType::type},
     #define _s(input) {{}, {}},
     #include "Magnum/GL/Implementation/pixelFormatMapping.hpp"
+    #undef _s
     #undef _c
 };
 
+}
+
+bool hasPixelFormat(const Magnum::PixelFormat format) {
+    if(isPixelFormatImplementationSpecific(format))
+        return true;
+
+    #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
+    /* See GL/Test/PixelFormatTest.cpp for more information. Returning true
+       unconditionally here as unsupported enum values shouldn't even be
+       compiled. */
+    if(UnsignedInt(format) > 0x1000) return true;
+    #endif
+
+    CORRADE_ASSERT(UnsignedInt(format) < Containers::arraySize(FormatMapping),
+        "GL::hasPixelFormat(): invalid format" << format, {});
+    return UnsignedInt(FormatMapping[UnsignedInt(format)].format);
 }
 
 GL::PixelFormat pixelFormat(const Magnum::PixelFormat format) {
@@ -330,10 +347,28 @@ namespace {
 
 constexpr GL::CompressedPixelFormat CompressedFormatMapping[] {
     #define _c(input, format) GL::CompressedPixelFormat::format,
+    #define _s(input) {},
     #include "Magnum/GL/Implementation/compressedPixelFormatMapping.hpp"
+    #undef _s
     #undef _c
 };
 
+}
+
+bool hasCompressedPixelFormat(const Magnum::CompressedPixelFormat format) {
+    if(isCompressedPixelFormatImplementationSpecific(format))
+        return true;
+
+    #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
+    /* See GL/Test/PixelFormatTest.cpp for more information. Returning true
+       unconditionally here as unsupported enum values shouldn't even be
+       compiled. */
+    if(UnsignedInt(format) > 0x1000) return true;
+    #endif
+
+    CORRADE_ASSERT(UnsignedInt(format) < Containers::arraySize(CompressedFormatMapping),
+        "GL::hasCompressedPixelFormat(): invalid format" << format, {});
+    return UnsignedInt(CompressedFormatMapping[UnsignedInt(format)]);
 }
 
 GL::CompressedPixelFormat compressedPixelFormat(const Magnum::CompressedPixelFormat format) {

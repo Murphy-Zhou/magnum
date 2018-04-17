@@ -56,6 +56,7 @@ struct PixelFormatTest: TestSuite::Tester {
     #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
     void mapCompressedFormatDeprecated();
     #endif
+    void mapCompressedFormatUnsupported();
     void mapCompressedFormatInvalid();
 
     void debugPixelFormat();
@@ -77,7 +78,7 @@ PixelFormatTest::PixelFormatTest() {
               #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
               &PixelFormatTest::mapTypeDeprecated,
               #endif
-              &PixelFormatTest::mapTypeDeprecated,
+              &PixelFormatTest::mapTypeUnsupported,
               &PixelFormatTest::mapTypeInvalid,
 
               &PixelFormatTest::size,
@@ -87,6 +88,7 @@ PixelFormatTest::PixelFormatTest() {
               #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
               &PixelFormatTest::mapCompressedFormatDeprecated,
               #endif
+              &PixelFormatTest::mapCompressedFormatUnsupported,
               &PixelFormatTest::mapCompressedFormatInvalid,
 
               &PixelFormatTest::debugPixelFormat,
@@ -95,6 +97,11 @@ PixelFormatTest::PixelFormatTest() {
 }
 
 void PixelFormatTest::mapFormatType() {
+    /* Touchstone verification */
+    CORRADE_VERIFY(hasPixelFormat(Magnum::PixelFormat::RGBA8Unorm));
+    CORRADE_COMPARE(pixelFormat(Magnum::PixelFormat::RGBA8Unorm), PixelFormat::RGBA);
+    CORRADE_COMPARE(pixelType(Magnum::PixelFormat::RGBA8Unorm), PixelType::UnsignedByte);
+
     /* This goes through the first 16 bits, which should be enough. Going
        through 32 bits takes 8 seconds, too much. */
     UnsignedInt firstUnhandled = 0xffff;
@@ -112,6 +119,7 @@ void PixelFormatTest::mapFormatType() {
                 case Magnum::PixelFormat::format: \
                     CORRADE_COMPARE(nextHandled, i); \
                     CORRADE_COMPARE(firstUnhandled, 0xffff); \
+                    CORRADE_VERIFY(hasPixelFormat(Magnum::PixelFormat::format)); \
                     CORRADE_COMPARE(pixelFormat(Magnum::PixelFormat::format), Magnum::GL::PixelFormat::expectedFormat); \
                     CORRADE_COMPARE(pixelType(Magnum::PixelFormat::format), Magnum::GL::PixelType::expectedType); \
                     ++nextHandled; \
@@ -120,11 +128,13 @@ void PixelFormatTest::mapFormatType() {
                 case Magnum::PixelFormat::format: \
                     CORRADE_COMPARE(nextHandled, i); \
                     CORRADE_COMPARE(firstUnhandled, 0xffff); \
-                    CORRADE_COMPARE(pixelFormat(Magnum::PixelFormat::format), Magnum::GL::PixelFormat(0)); \
-                    CORRADE_COMPARE(pixelType(Magnum::PixelFormat::format), Magnum::GL::PixelType(0)); \
+                    CORRADE_VERIFY(!hasPixelFormat(Magnum::PixelFormat::format)); \
+                    pixelFormat(Magnum::PixelFormat::format); \
+                    pixelType(Magnum::PixelFormat::format); \
                     ++nextHandled; \
                     continue;
             #include "Magnum/GL/Implementation/pixelFormatMapping.hpp"
+            #undef _s
             #undef _c
 
             /* Here to silence unhandled value warnings and to verify that all
@@ -209,6 +219,7 @@ void PixelFormatTest::mapFormatType() {
 }
 
 void PixelFormatTest::mapFormatImplementationSpecific() {
+    CORRADE_VERIFY(hasPixelFormat(Magnum::pixelFormatWrap(PixelFormat::RGBA)));
     CORRADE_COMPARE(pixelFormat(Magnum::pixelFormatWrap(PixelFormat::RGBA)),
         PixelFormat::RGBA);
 }
@@ -238,8 +249,11 @@ void PixelFormatTest::mapFormatInvalid() {
     std::ostringstream out;
     Error redirectError{&out};
 
+    hasPixelFormat(Magnum::PixelFormat(0x123));
     pixelFormat(Magnum::PixelFormat(0x123));
-    CORRADE_COMPARE(out.str(), "GL::pixelFormat(): invalid format PixelFormat(0x123)\n");
+    CORRADE_COMPARE(out.str(),
+        "GL::hasPixelFormat(): invalid format PixelFormat(0x123)\n"
+        "GL::pixelFormat(): invalid format PixelFormat(0x123)\n");
 }
 
 void PixelFormatTest::mapTypeImplementationSpecific() {
@@ -268,9 +282,10 @@ void PixelFormatTest::mapTypeUnsupported() {
     #ifndef MAGNUM_TARGET_GLES2
     CORRADE_SKIP("All pixel formats are supported on ES3+");
     #else
+    CORRADE_VERIFY(!hasPixelFormat(Magnum::PixelFormat::RGBA16UI));
+
     std::ostringstream out;
     Error redirectError{&out};
-
     pixelType(Magnum::PixelFormat::RGB16UI);
     CORRADE_COMPARE(out.str(), "GL::pixelType(): format PixelFormat::RGB16UI is not supported on this target\n");
     #endif
@@ -279,7 +294,6 @@ void PixelFormatTest::mapTypeUnsupported() {
 void PixelFormatTest::mapTypeInvalid() {
     std::ostringstream out;
     Error redirectError{&out};
-
     pixelType(Magnum::PixelFormat(0x123));
     CORRADE_COMPARE(out.str(), "GL::pixelType(): invalid format PixelFormat(0x123)\n");
 }
@@ -301,6 +315,10 @@ void PixelFormatTest::size() {
 }
 
 void PixelFormatTest::mapCompressedFormat() {
+    /* Touchstone verification */
+    CORRADE_VERIFY(hasCompressedPixelFormat(Magnum::CompressedPixelFormat::Bc1RGBAUnorm));
+    CORRADE_COMPARE(compressedPixelFormat(Magnum::CompressedPixelFormat::Bc1RGBAUnorm), CompressedPixelFormat::RGBAS3tcDxt1);
+
     /* This goes through the first 16 bits, which should be enough. Going
        through 32 bits takes 8 seconds, too much. */
     UnsignedInt firstUnhandled = 0xffff;
@@ -318,10 +336,20 @@ void PixelFormatTest::mapCompressedFormat() {
                 case Magnum::CompressedPixelFormat::format: \
                     CORRADE_COMPARE(nextHandled, i); \
                     CORRADE_COMPARE(firstUnhandled, 0xffff); \
+                    CORRADE_VERIFY(hasCompressedPixelFormat(Magnum::CompressedPixelFormat::format)); \
                     CORRADE_COMPARE(compressedPixelFormat(Magnum::CompressedPixelFormat::format), Magnum::GL::CompressedPixelFormat::expectedFormat); \
                     ++nextHandled; \
                     continue;
+            #define _s(format) \
+                case Magnum::CompressedPixelFormat::format: \
+                    CORRADE_COMPARE(nextHandled, i); \
+                    CORRADE_COMPARE(firstUnhandled, 0xffff); \
+                    CORRADE_VERIFY(!hasCompressedPixelFormat(Magnum::CompressedPixelFormat::format)); \
+                    compressedPixelFormat(Magnum::CompressedPixelFormat::format); \
+                    ++nextHandled; \
+                    continue;
             #include "Magnum/GL/Implementation/compressedPixelFormatMapping.hpp"
+            #undef _s
             #undef _c
 
             /* Here to silence unhandled value warnings and to verify that all
@@ -419,6 +447,7 @@ void PixelFormatTest::mapCompressedFormat() {
 }
 
 void PixelFormatTest::mapCompressedFormatImplementationSpecific() {
+    CORRADE_VERIFY(hasCompressedPixelFormat(Magnum::compressedPixelFormatWrap(CompressedPixelFormat::RGBAS3tcDxt1)));
     CORRADE_COMPARE(compressedPixelFormat(Magnum::compressedPixelFormatWrap(CompressedPixelFormat::RGBAS3tcDxt1)),
         CompressedPixelFormat::RGBAS3tcDxt1);
 }
@@ -432,12 +461,28 @@ void PixelFormatTest::mapCompressedFormatDeprecated() {
 }
 #endif
 
+void PixelFormatTest::mapCompressedFormatUnsupported() {
+    #if 1
+    CORRADE_SKIP("All compressed pixel formats are currently supported everywhere");
+    #else
+    CORRADE_VERIFY(!hasCompressedPixelFormat(Magnum::CompressedPixelFormat::Bc1RGBAUnorm));
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    compressedPixelFormat(Magnum::CompressedPixelFormat::Bc1RGBAUnorm);
+    CORRADE_COMPARE(out.str(), "GL::compressedPixelFormat(): format CompressedPixelFormat::Bc1RGBAUnorm is not supported on this target\n");
+    #endif
+}
+
 void PixelFormatTest::mapCompressedFormatInvalid() {
     std::ostringstream out;
     Error redirectError{&out};
 
+    hasCompressedPixelFormat(Magnum::CompressedPixelFormat(0x123));
     compressedPixelFormat(Magnum::CompressedPixelFormat(0x123));
-    CORRADE_COMPARE(out.str(), "GL::compressedPixelFormat(): invalid format CompressedPixelFormat(0x123)\n");
+    CORRADE_COMPARE(out.str(),
+        "GL::hasCompressedPixelFormat(): invalid format CompressedPixelFormat(0x123)\n"
+        "GL::compressedPixelFormat(): invalid format CompressedPixelFormat(0x123)\n");
 }
 
 void PixelFormatTest::debugPixelFormat() {

@@ -68,6 +68,12 @@ UnsignedInt pixelSize(const PixelFormat format) {
         case PixelFormat::R32I:
         case PixelFormat::R32F:
             return 4;
+        case PixelFormat::RGB16Unorm:
+        case PixelFormat::RGB16Snorm:
+        case PixelFormat::RGB16UI:
+        case PixelFormat::RGB16I:
+        case PixelFormat::RGB16F:
+            return 6;
         case PixelFormat::RGBA16Unorm:
         case PixelFormat::RGBA16Snorm:
         case PixelFormat::RGBA16UI:
@@ -77,12 +83,6 @@ UnsignedInt pixelSize(const PixelFormat format) {
         case PixelFormat::RG32I:
         case PixelFormat::RG32F:
             return 8;
-        case PixelFormat::RGB16Unorm:
-        case PixelFormat::RGB16Snorm:
-        case PixelFormat::RGB16UI:
-        case PixelFormat::RGB16I:
-        case PixelFormat::RGB16F:
-            return 6;
         case PixelFormat::RGB32UI:
         case PixelFormat::RGB32I:
         case PixelFormat::RGB32F:
@@ -158,7 +158,7 @@ UnsignedInt pixelSize(const PixelFormat format) {
         #endif
     }
 
-    CORRADE_ASSERT_UNREACHABLE();
+    CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
 #ifndef DOXYGEN_GENERATING_OUTPUT
@@ -298,7 +298,7 @@ namespace Implementation {
 
 PixelFormat pixelFormatWrap(const UnsignedInt implementationSpecific) {
     CORRADE_ASSERT(!(implementationSpecific & (1u << 31)),
-        "pixelFormatWrap(): format already wrapped or implementation-specific value too large", {});
+        "pixelFormatWrap(): implementation-specific value already wrapped or too large", {});
     return PixelFormat((1u << 31)|implementationSpecific);
 }
 
@@ -313,7 +313,7 @@ UnsignedInt pixelFormatUnwrap(const PixelFormat format) {
 #ifndef DOXYGEN_GENERATING_OUTPUT
 Debug& operator<<(Debug& debug, const CompressedPixelFormat value) {
     if(isCompressedPixelFormatImplementationSpecific(value)) {
-        debug << "CompressedPixelFormat::ImplementationSpecific(" << Debug::nospace << reinterpret_cast<void*>(compressedPixelFormatUnwrap(value)) << Debug::nospace << ")";
+        return debug << "CompressedPixelFormat::ImplementationSpecific(" << Debug::nospace << reinterpret_cast<void*>(compressedPixelFormatUnwrap(value)) << Debug::nospace << ")";
     }
 
     switch(value) {

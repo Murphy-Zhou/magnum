@@ -33,8 +33,14 @@ namespace Magnum { namespace Test {
 struct ImageTest: TestSuite::Tester {
     explicit ImageTest();
 
-    void construct();
-    void constructCompressed();
+    void constructGeneric();
+    void constructGenericPlaceholder();
+    void constructImplementationSpecific();
+    void constructImplementationSpecificPlaceholder();
+    void constructCompressedGeneric();
+    void constructCompressedGenericPlaceholder();
+    void constructCompressedImplementationSpecific();
+    void constructCompressedImplementationSpecificPlaceholder();
     void constructCopy();
     void constructCopyCompressed();
     void constructMove();
@@ -47,8 +53,14 @@ struct ImageTest: TestSuite::Tester {
 };
 
 ImageTest::ImageTest() {
-    addTests({&ImageTest::construct,
-              &ImageTest::constructCompressed,
+    addTests({&ImageTest::constructGeneric,
+              &ImageTest::constructGenericPlaceholder,
+              &ImageTest::constructImplementationSpecific,
+              &ImageTest::constructImplementationSpecificPlaceholder,
+              &ImageTest::constructCompressedGeneric,
+              &ImageTest::constructCompressedGenericPlaceholder,
+              &ImageTest::constructCompressedImplementationSpecific,
+              &ImageTest::constructCompressedImplementationSpecificPlaceholder,
               &ImageTest::constructCopy,
               &ImageTest::constructCopyCompressed,
               &ImageTest::constructMove,
@@ -60,19 +72,200 @@ ImageTest::ImageTest() {
               &ImageTest::releaseCompressed});
 }
 
-void ImageTest::construct() {
-    auto data = new char[3*4];
-    Image2D a{PixelStorage{}.setAlignment(1),
-        PixelFormat::RGBA, PixelType::UnsignedByte, {1, 3}, Containers::Array<char>{data, 3*4}};
+namespace {
 
-    CORRADE_COMPARE(a.storage().alignment(), 1);
-    CORRADE_COMPARE(a.format(), PixelFormat::RGBA);
-    CORRADE_COMPARE(a.type(), PixelType::UnsignedByte);
-    CORRADE_COMPARE(a.size(), Vector2i(1, 3));
-    CORRADE_COMPARE(a.data(), data);
+namespace GL {
+    enum class PixelFormat { RGB = 666 };
+    enum class PixelType { UnsignedShort = 1337 };
+    UnsignedInt pixelSize(PixelFormat format, PixelType type) {
+        CORRADE_INTERNAL_ASSERT(format == PixelFormat::RGB);
+        CORRADE_INTERNAL_ASSERT(type == PixelType::UnsignedShort);
+        return 6;
+    }
+
+    enum class CompressedPixelFormat { RGBS3tcDxt1 = 21 };
 }
 
-void ImageTest::constructCompressed() {
+namespace Vk {
+    enum class PixelFormat { R32G32B32F = 42 };
+    UnsignedInt pixelSize(PixelFormat format) {
+        CORRADE_INTERNAL_ASSERT(format == PixelFormat::R32G32B32F);
+        return 12;
+    }
+
+    enum class CompressedPixelFormat { Bc1SRGBAlpha = 42 };
+}
+
+}
+
+void ImageTest::constructGeneric() {
+    {
+        auto data = new char[3*4];
+        Image2D a{PixelFormat::RGBA8Unorm, {1, 3}, Containers::Array<char>{data, 3*4}};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), PixelFormat::RGBA8Unorm);
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 4);
+        CORRADE_COMPARE(a.size(), Vector2i(1, 3));
+        CORRADE_COMPARE(a.data(), data);
+    } {
+        auto data = new char[1*2];
+        Image2D a{PixelStorage{}.setAlignment(1),
+            PixelFormat::R16UI, {1, 3}, Containers::Array<char>{data, 1*2}};
+
+        CORRADE_COMPARE(a.storage().alignment(), 1);
+        CORRADE_COMPARE(a.format(), PixelFormat::R16UI);
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 2);
+        CORRADE_COMPARE(a.size(), Vector2i(1, 3));
+        CORRADE_COMPARE(a.data(), data);
+    }
+}
+
+void ImageTest::constructGenericPlaceholder() {
+    {
+        Image2D a{PixelFormat::RG32F};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), PixelFormat::RG32F);
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 16);
+        CORRADE_COMPARE(a.size(), Vector2i{});
+        CORRADE_COMPARE(a.data(), nullptr);
+    } {
+        Image2D a{PixelStorage{}.setAlignment(1),
+            PixelFormat::RGB16F};
+
+        CORRADE_COMPARE(a.storage().alignment(), 1);
+        CORRADE_COMPARE(a.format(), PixelFormat::RGB16F);
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 6);
+        CORRADE_COMPARE(a.size(), Vector2i{});
+        CORRADE_COMPARE(a.data(), nullptr);
+    }
+}
+
+void ImageTest::constructImplementationSpecific() {
+    /* Single format */
+    {
+        auto data = new char[3*12];
+        Image2D a{Vk::PixelFormat::R32G32B32F, {1, 3}, Containers::Array<char>{data, 3*12}};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(Vk::PixelFormat::R32G32B32F));
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 12);
+        CORRADE_COMPARE(a.size(), Vector2i(1, 3));
+        CORRADE_COMPARE(a.data(), data);
+    } {
+        auto data = new char[3*6];
+        Image2D a{PixelStorage{}.setAlignment(1),
+            Vk::PixelFormat::R32G32B32F, {1, 3}, Containers::Array<char>{data, 3*12}};
+
+        CORRADE_COMPARE(a.storage().alignment(), 1);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(Vk::PixelFormat::R32G32B32F));
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 12);
+        CORRADE_COMPARE(a.size(), Vector2i(1, 3));
+        CORRADE_COMPARE(a.data(), data);
+    }
+
+    /* Format + extra */
+    {
+        auto data = new char[3*6];
+        Image2D a{GL::PixelFormat::RGB, GL::PixelType::UnsignedShort, {1, 3}, Containers::Array<char>{data, 3*6}};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(GL::PixelFormat::RGB));
+        CORRADE_COMPARE(a.formatExtra(), UnsignedInt(GL::PixelType::UnsignedShort));
+        CORRADE_COMPARE(a.pixelSize(), 6);
+        CORRADE_COMPARE(a.size(), Vector2i(1, 3));
+        CORRADE_COMPARE(a.data(), data);
+    } {
+        auto data = new char[3*6];
+        Image2D a{PixelStorage{}.setAlignment(1),
+            GL::PixelFormat::RGB, GL::PixelType::UnsignedShort, {1, 3}, Containers::Array<char>{data, 3*6}};
+
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(GL::PixelFormat::RGB));
+        CORRADE_COMPARE(a.formatExtra(), UnsignedInt(GL::PixelType::UnsignedShort));
+        CORRADE_COMPARE(a.pixelSize(), 6);
+        CORRADE_COMPARE(a.size(), Vector2i(1, 3));
+        CORRADE_COMPARE(a.data(), data);
+    }
+
+    /* Manual pixel size */
+    {
+        auto data = new char[3*6];
+        Image2D a{PixelStorage{}.setAlignment(1), 666, 1337, 6, {1, 3}, Containers::Array<char>{data, 3*6}};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(GL::PixelFormat::RGB));
+        CORRADE_COMPARE(a.formatExtra(), UnsignedInt(GL::PixelType::UnsignedShort));
+        CORRADE_COMPARE(a.pixelSize(), 6);
+        CORRADE_COMPARE(a.size(), Vector2i(1, 3));
+        CORRADE_COMPARE(a.data(), data);
+    }
+}
+
+void ImageTest::constructImplementationSpecificPlaceholder() {
+    /* Single format */
+    {
+        Image2D a{Vk::PixelFormat::R32G32B32F};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(Vk::PixelFormat::R32G32B32F));
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 12);
+        CORRADE_COMPARE(a.size(), Vector2i{});
+        CORRADE_COMPARE(a.data(), nullptr);
+    } {
+        Image2D a{PixelStorage{}.setAlignment(1),
+            Vk::PixelFormat::R32G32B32F};
+
+        CORRADE_COMPARE(a.storage().alignment(), 1);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(Vk::PixelFormat::R32G32B32F));
+        CORRADE_COMPARE(a.formatExtra(), 0);
+        CORRADE_COMPARE(a.pixelSize(), 12);
+        CORRADE_COMPARE(a.size(), Vector2i{});
+        CORRADE_COMPARE(a.data(), nullptr);
+    }
+
+    /* Format + extra */
+    {
+        Image2D a{GL::PixelFormat::RGB, GL::PixelType::UnsignedShort};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(GL::PixelFormat::RGB));
+        CORRADE_COMPARE(a.formatExtra(), UnsignedInt(GL::PixelType::UnsignedShort));
+        CORRADE_COMPARE(a.pixelSize(), 6);
+        CORRADE_COMPARE(a.size(), Vector2i{});
+        CORRADE_COMPARE(a.data(), nullptr);
+    } {
+        Image2D a{PixelStorage{}.setAlignment(1),
+            GL::PixelFormat::RGB, GL::PixelType::UnsignedShort};
+
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(GL::PixelFormat::RGB));
+        CORRADE_COMPARE(a.formatExtra(), UnsignedInt(GL::PixelType::UnsignedShort));
+        CORRADE_COMPARE(a.pixelSize(), 6);
+        CORRADE_COMPARE(a.size(), Vector2i{});
+        CORRADE_COMPARE(a.data(), nullptr);
+    }
+
+    /* Manual pixel size */
+    {
+        Image2D a{PixelStorage{}.setAlignment(1), 666, 1337, 6};
+
+        CORRADE_COMPARE(a.storage().alignment(), 4);
+        CORRADE_COMPARE(a.format(), pixelFormatWrap(GL::PixelFormat::RGB));
+        CORRADE_COMPARE(a.formatExtra(), UnsignedInt(GL::PixelType::UnsignedShort));
+        CORRADE_COMPARE(a.pixelSize(), 6);
+        CORRADE_COMPARE(a.size(), Vector2i{});
+        CORRADE_COMPARE(a.data(), nullptr);
+    }
+}
+
+void ImageTest::constructCompressedGeneric() {
     auto data = new char[8];
     CompressedImage2D a{
         #ifndef MAGNUM_TARGET_GLES

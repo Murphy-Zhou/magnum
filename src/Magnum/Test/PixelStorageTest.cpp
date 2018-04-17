@@ -34,8 +34,6 @@ namespace Magnum { namespace Test {
 struct PixelStorageTest: TestSuite::Tester {
     explicit PixelStorageTest();
 
-    void pixelSize();
-
     void compare();
     #ifndef MAGNUM_TARGET_GLES
     void compareCompressed();
@@ -66,9 +64,7 @@ struct PixelStorageTest: TestSuite::Tester {
 typedef Math::Vector3<std::size_t> Vector3st;
 
 PixelStorageTest::PixelStorageTest() {
-    addTests({&PixelStorageTest::pixelSize,
-
-              &PixelStorageTest::compare,
+    addTests({&PixelStorageTest::compare,
               #ifndef MAGNUM_TARGET_GLES
               &PixelStorageTest::compareCompressed,
               #endif
@@ -94,15 +90,6 @@ PixelStorageTest::PixelStorageTest() {
               &PixelStorageTest::dataOffsetSizeCompressed
               #endif
               });
-}
-
-void PixelStorageTest::pixelSize() {
-    CORRADE_COMPARE(PixelStorage::pixelSize(PixelFormat::RGBA, PixelType::UnsignedInt), 4*4);
-    CORRADE_COMPARE(PixelStorage::pixelSize(PixelFormat::DepthComponent, PixelType::UnsignedShort), 2);
-    #ifndef MAGNUM_TARGET_WEBGL
-    CORRADE_COMPARE(PixelStorage::pixelSize(PixelFormat::StencilIndex, PixelType::UnsignedByte), 1);
-    #endif
-    CORRADE_COMPARE(PixelStorage::pixelSize(PixelFormat::DepthStencil, PixelType::UnsignedInt248), 4);
 }
 
 void PixelStorageTest::compare() {
