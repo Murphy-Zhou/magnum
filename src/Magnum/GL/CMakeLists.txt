@@ -257,7 +257,7 @@ if(WITH_OPENGLTESTER)
     # enables the application library dependencies
     target_link_libraries(MagnumOpenGLTester Magnum Corrade::TestSuite ${OPENGLTESTER_APPLICATION})
 
-    install(FILES ${MagnumOpenGLTester_HEADERS} DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR})
+    install(FILES ${MagnumOpenGLTester_HEADERS} DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/GL)
     if(BUILD_DEPRECATED)
         install(FILES ${MagnumOpenGLTester_DEPRECATED_HEADERS} DESTINATION ${MAGNUM_INCLUDE_INSTALL_DIR}/Test)
     endif()
