@@ -49,6 +49,8 @@ struct PixelFormatTest: TestSuite::Tester {
     void mapTypeUnsupported();
     void mapTypeInvalid();
 
+    void size();
+
     void mapCompressedFormat();
     void mapCompressedFormatImplementationSpecific();
     #if defined(MAGNUM_BUILD_DEPRECATED) && defined(MAGNUM_TARGET_GL)
@@ -77,6 +79,8 @@ PixelFormatTest::PixelFormatTest() {
               #endif
               &PixelFormatTest::mapTypeDeprecated,
               &PixelFormatTest::mapTypeInvalid,
+
+              &PixelFormatTest::size,
 
               &PixelFormatTest::mapCompressedFormat,
               &PixelFormatTest::mapCompressedFormatImplementationSpecific,
@@ -278,6 +282,22 @@ void PixelFormatTest::mapTypeInvalid() {
 
     pixelType(Magnum::PixelFormat(0x123));
     CORRADE_COMPARE(out.str(), "GL::pixelType(): invalid format PixelFormat(0x123)\n");
+}
+
+void PixelFormatTest::size() {
+    #ifndef MAGNUM_TARGET_GLES
+    CORRADE_COMPARE(pixelSize(PixelFormat::RGB, PixelType::UnsignedByte332), 1);
+    #endif
+    #ifndef MAGNUM_TARGET_WEBGL
+    CORRADE_COMPARE(pixelSize(PixelFormat::StencilIndex, PixelType::UnsignedByte), 1);
+    #endif
+    CORRADE_COMPARE(pixelSize(PixelFormat::DepthComponent, PixelType::UnsignedShort), 2);
+    CORRADE_COMPARE(pixelSize(PixelFormat::RGBA, PixelType::UnsignedShort4444), 4);
+    CORRADE_COMPARE(pixelSize(PixelFormat::DepthStencil, PixelType::UnsignedInt248), 4);
+    CORRADE_COMPARE(pixelSize(PixelFormat::RGBA, PixelType::UnsignedInt), 4*4);
+    #ifndef MAGNUM_TARGET_GLES2
+    CORRADE_COMPARE(pixelSize(PixelFormat::DepthStencil, PixelType::Float32UnsignedInt248Rev), 8);
+    #endif
 }
 
 void PixelFormatTest::mapCompressedFormat() {
